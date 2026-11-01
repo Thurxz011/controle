@@ -2,227 +2,267 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Quiz Interativo</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg-color: #0f172a;
-  --card-bg: #1e293b;
-  --text-color: #f8fafc;
+  --bg: #1b1038;
+  --bg2: #2d1b69;
+  --card: rgba(255,255,255,.08);
+  --text: #fff;
+  --accent: #ffd23f;
+  --ok: #19c37d;
+  --err: #f0384f;
 }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; margin: 0; }
 body {
-  font-family: 'Poppins', sans-serif;
-  margin: 0;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  background: var(--bg-color);
-  color: var(--text-color);
-  transition: background 0.4s ease;
-  padding: 15px;
-  box-sizing: border-box;
+  font-family: 'Nunito', sans-serif;
+  color: var(--text);
+  background: radial-gradient(circle at 20% 10%, var(--bg2), var(--bg) 70%);
+  background-attachment: fixed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+  transition: background .4s ease;
+  overflow-x: hidden;
 }
-#container {
-  width: 100%;
-  max-width: 480px;
-  background: var(--card-bg);
-  border-radius: 20px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-  padding: 24px;
-  box-sizing: border-box;
-  text-align: center;
+body.ok  { background: radial-gradient(circle at 50% 30%, #35e0a0, var(--ok) 55%, #0a7a4d); }
+body.err { background: radial-gradient(circle at 50% 30%, #ff6b7d, var(--err) 55%, #9b1228); }
+
+#container { width: 100%; max-width: 480px; text-align: center; }
+h1, h2 { font-family: 'Baloo 2', sans-serif; margin: 0; line-height: 1.05; }
+h2 { font-size: 30px; font-weight: 800; }
+
+.logo { font-family: 'Baloo 2'; font-weight: 800; font-size: 44px; color: var(--accent); text-shadow: 0 4px 0 rgba(0,0,0,.25); margin-bottom: 4px; }
+.painel {
+  background: var(--card);
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 28px;
+  padding: 28px 22px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 20px 50px rgba(0,0,0,.35);
 }
+.sala { display: inline-block; margin: 10px 0 18px; padding: 6px 16px; border-radius: 99px; background: rgba(0,0,0,.3); font-weight: 800; letter-spacing: 2px; }
 input {
-  font-family: 'Poppins', sans-serif;
-  font-size: 18px;
-  padding: 14px;
-  width: 100%;
-  margin: 10px 0;
-  border: 2px solid #334155;
-  border-radius: 12px;
-  background: #0f172a;
-  color: #fff;
-  box-sizing: border-box;
-  outline: none;
-  transition: border-color 0.3s;
+  font: 800 20px 'Nunito', sans-serif;
+  width: 100%; padding: 16px; margin-bottom: 14px;
+  border: 3px solid transparent; border-radius: 16px;
+  background: #fff; color: #1b1038; text-align: center; outline: none;
+  transition: border-color .2s, transform .2s;
 }
-input:focus {
-  border-color: #38bdf8;
-}
+input:focus { border-color: var(--accent); transform: scale(1.02); }
 .btn-acao {
-  font-family: 'Poppins', sans-serif;
-  font-size: 18px;
-  font-weight: 600;
-  padding: 14px;
-  width: 100%;
-  margin: 10px 0;
-  border: none;
-  border-radius: 12px;
-  background: #38bdf8;
-  color: #0f172a;
-  cursor: pointer;
-  transition: transform 0.1s, opacity 0.2s;
+  font: 800 22px 'Baloo 2', sans-serif;
+  width: 100%; padding: 14px; border: 0; border-radius: 16px;
+  background: var(--accent); color: #1b1038; cursor: pointer;
+  box-shadow: 0 6px 0 #c9a21a;
+  transition: transform .1s, box-shadow .1s;
 }
-.btn-acao:active {
-  transform: scale(0.98);
-}
+.btn-acao:active { transform: translateY(5px); box-shadow: 0 1px 0 #c9a21a; }
+
 .pergunta-box {
-  font-size: 18px;
-  font-weight: 600;
-  margin-bottom: 16px;
-  padding: 14px;
-  background: rgba(255,255,255,0.05);
-  border-radius: 12px;
-  text-align: center;
-  border-left: 4px solid #38bdf8;
+  font: 700 22px/1.25 'Baloo 2', sans-serif;
+  padding: 20px 18px; margin-bottom: 18px;
+  background: #fff; color: #1b1038;
+  border-radius: 20px;
+  box-shadow: 0 6px 0 rgba(0,0,0,.25);
 }
-.alts {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
+.alts { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .alts button {
-  font-family: 'Poppins', sans-serif;
-  height: 90px;
-  margin: 0;
-  width: 100%;
-  font-size: 38px;
-  font-weight: 700;
-  color: #fff;
-  border: none;
-  border-radius: 14px;
-  cursor: pointer;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-  transition: transform 0.1s, filter 0.2s;
+  position: relative;
+  height: 120px; border: 0; border-radius: 20px;
+  font: 800 54px 'Baloo 2', sans-serif; color: #fff; cursor: pointer;
+  text-shadow: 0 3px 0 rgba(0,0,0,.25);
+  box-shadow: 0 7px 0 rgba(0,0,0,.3);
+  transition: transform .1s, box-shadow .1s;
 }
-.alts button:active {
-  transform: scale(0.95);
-  filter: brightness(0.9);
+.alts button::after { content: attr(data-s); position: absolute; top: 10px; left: 14px; font-size: 18px; opacity: .85; }
+.alts button:active { transform: translateY(6px); box-shadow: 0 1px 0 rgba(0,0,0,.3); }
+
+/* Espera */
+.pulse {
+  width: 76px; height: 76px; margin: 0 auto 18px; border-radius: 50%;
+  background: var(--accent);
+  animation: pulse 1.4s ease-in-out infinite;
 }
-h2 {
-  margin-top: 0;
-  font-weight: 700;
+@keyframes pulse { 0%,100% { transform: scale(.8); opacity: .7; } 50% { transform: scale(1.1); opacity: 1; } }
+.sub { opacity: .85; font-weight: 700; margin-top: 8px; }
+
+/* Resultado */
+.res .icone {
+  width: 140px; height: 140px; margin: 0 auto 18px; border-radius: 50%;
+  background: #fff; display: flex; align-items: center; justify-content: center;
+  font-size: 80px; font-weight: 800; font-family: 'Baloo 2';
+  box-shadow: 0 10px 0 rgba(0,0,0,.2);
+  animation: pop .55s cubic-bezier(.2,1.6,.4,1) both;
+}
+.res.ok .icone { color: var(--ok); }
+.res.err .icone { color: var(--err); animation: pop .5s cubic-bezier(.2,1.6,.4,1) both, shake .5s .5s; }
+.res h1 { font-size: clamp(44px, 14vw, 64px); font-weight: 800; text-shadow: 0 5px 0 rgba(0,0,0,.2); }
+.pts {
+  display: inline-block; margin-top: 22px; padding: 12px 28px;
+  background: rgba(0,0,0,.25); border-radius: 99px;
+  font: 800 24px 'Baloo 2';
+}
+@keyframes pop { from { transform: scale(0) rotate(-25deg); } to { transform: scale(1) rotate(0); } }
+@keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-12px); } 75% { transform: translateX(12px); } }
+
+/* Confete */
+.confete { position: fixed; top: -20px; width: 10px; height: 16px; border-radius: 2px; pointer-events: none; animation: cair linear forwards; }
+@keyframes cair { to { transform: translateY(110vh) rotate(720deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
 }
 </style>
 </head>
 <body>
 <div id="container">
-  <div id="tela"></div>
+  <div id="tela"></div>
 </div>
 <script>
 const DB = "https://teste-kahoot-538bf-default-rtdb.firebaseio.com/salas/";
 const sala = new URLSearchParams(location.search).get("sala") || "";
 const cores = ["#e21b3c", "#1368ce", "#d89e00", "#26890c"];
 const letras = ["A", "B", "C", "D"];
+const simbolos = ["▲", "◆", "●", "■"];
 const T = document.getElementById("tela");
 let id = null, nome = "", respondida = 0, minhaAlt = 0, ultimo = "";
 
 const url = c => DB + sala + "/" + c + ".json";
 
 function resetBg() {
-  document.body.style.background = "var(--bg-color)";
+  document.body.className = "";
+  document.querySelectorAll(".confete").forEach(c => c.remove());
 }
 
-function msg(t) {
-  resetBg();
-  T.innerHTML = "";
-  const h = document.createElement("h2");
-  h.textContent = t;
-  T.appendChild(h);
+function msg(t, sub) {
+  resetBg();
+  T.innerHTML = '<div class="painel"><div class="pulse"></div><h2></h2>' +
+    (sub ? '<p class="sub"></p>' : '') + '</div>';
+  T.querySelector("h2").textContent = t;
+  if (sub) T.querySelector(".sub").textContent = sub;
 }
 
 function entrada() {
-  resetBg();
-  if (!sala) { msg("Escaneie o QR Code do jogo."); return; }
-  T.innerHTML = '<h2>Sala ' + sala.replace(/[^A-Za-z0-9]/g, "") + '</h2>' +
-    '<input id="nome" maxlength="15" placeholder="Seu nome">' +
-    '<button class="btn-acao" onclick="entrar()">Entrar</button>';
+  resetBg();
+  if (!sala) { msg("Escaneie o QR Code do jogo."); return; }
+  T.innerHTML = '<div class="painel">' +
+    '<div class="logo">Quiz!</div>' +
+    '<div class="sala">Sala ' + sala.replace(/[^A-Za-z0-9]/g, "") + '</div>' +
+    '<input id="nome" maxlength="15" placeholder="Seu nome" autocomplete="off">' +
+    '<button class="btn-acao" onclick="entrar()">Entrar</button></div>';
 }
 
 function entrar() {
-  nome = document.getElementById("nome").value.trim();
-  if (!nome) return;
-  id = "j" + Math.random().toString(36).slice(2, 8);
-  fetch(url("jogadores/" + id), { method: "PUT", body: JSON.stringify({ nome: nome }) });
-  msg("Pronto, " + nome + "! Aguarde o início.");
-  setInterval(atualizar, 700);
+  nome = document.getElementById("nome").value.trim();
+  if (!nome) return;
+  id = "j" + Math.random().toString(36).slice(2, 8);
+  fetch(url("jogadores/" + id), { method: "PUT", body: JSON.stringify({ nome: nome }) });
+  msg("Pronto, " + nome + "!", "Aguarde o início do jogo.");
+  setInterval(atualizar, 700);
 }
 
 async function atualizar() {
-  let e;
-  try { e = await (await fetch(url("estado"))).json(); } catch (x) { return; }
-  if (!e) return;
-  const chave = e.fase + e.n;
-  if (chave === ultimo) return;
-  ultimo = chave;
-  if (e.fase === "pergunta") { if (respondida !== e.n) botoes(e.n); }
-  else if (e.fase === "resultado") await resultado(e);
-  else if (e.fase === "fim") await fim();
-  else msg("Aguarde o início.");
+  let e;
+  try { e = await (await fetch(url("estado"))).json(); } catch (x) { return; }
+  if (!e) return;
+  const chave = e.fase + e.n;
+  if (chave === ultimo) return;
+  ultimo = chave;
+  if (e.fase === "pergunta") { if (respondida !== e.n) botoes(e.n); }
+  else if (e.fase === "resultado") await resultado(e);
+  else if (e.fase === "fim") await fim();
+  else msg("Aguarde o início.");
 }
 
 async function botoes(n) {
-  resetBg();
-  T.innerHTML = "";
-  
-  // Tenta buscar o texto da pergunta no Firebase para exibir em cima
-  let qTexto = "Questão " + n;
-  try {
-    const qData = await (await fetch(DB + sala + "/perguntas/" + (n - 1) + ".json")).json();
-    if (qData && qData.titulo) qTexto = qData.titulo;
-    else if (qData && qData.pergunta) qTexto = qData.pergunta;
-  } catch(err) {}
+  resetBg();
+  T.innerHTML = "";
 
-  const pBox = document.createElement("div");
-  pBox.className = "pergunta-box";
-  pBox.textContent = qTexto;
-  T.appendChild(pBox);
+  let qTexto = "Questão " + n;
+  try {
+    const qData = await (await fetch(DB + sala + "/perguntas/" + (n - 1) + ".json")).json();
+    if (qData && qData.titulo) qTexto = qData.titulo;
+    else if (qData && qData.pergunta) qTexto = qData.pergunta;
+  } catch (err) {}
 
-  const g = document.createElement("div");
-  g.className = "alts";
-  for (let i = 1; i <= 4; i++) {
-    const b = document.createElement("button");
-    b.textContent = letras[i - 1];
-    b.style.background = cores[i - 1];
-    b.onclick = () => responder(n, i);
-    g.appendChild(b);
-  }
-  T.appendChild(g);
+  const pBox = document.createElement("div");
+  pBox.className = "pergunta-box";
+  pBox.textContent = qTexto;
+  T.appendChild(pBox);
+
+  const g = document.createElement("div");
+  g.className = "alts";
+  for (let i = 1; i <= 4; i++) {
+    const b = document.createElement("button");
+    b.textContent = letras[i - 1];
+    b.dataset.s = simbolos[i - 1];
+    b.style.background = cores[i - 1];
+    b.onclick = () => responder(n, i);
+    g.appendChild(b);
+  }
+  T.appendChild(g);
 }
 
 async function responder(n, alt) {
-  respondida = n; minhaAlt = alt;
-  msg("Resposta enviada! Aguarde.");
-  await fetch(url("respostas/" + n + "/" + id), {
-    method: "PUT",
-    body: JSON.stringify({ alt: alt, t: { ".sv": "timestamp" } })
-  });
+  respondida = n; minhaAlt = alt;
+  msg("Resposta enviada!", "Aguarde o resultado...");
+  await fetch(url("respostas/" + n + "/" + id), {
+    method: "PUT",
+    body: JSON.stringify({ alt: alt, t: { ".sv": "timestamp" } })
+  });
+}
+
+function confete() {
+  const paleta = ["#ffd23f", "#fff", "#1368ce", "#e21b3c", "#26890c", "#ff8fd8"];
+  for (let i = 0; i < 40; i++) {
+    const c = document.createElement("div");
+    c.className = "confete";
+    c.style.left = Math.random() * 100 + "vw";
+    c.style.background = paleta[i % paleta.length];
+    c.style.animationDuration = 2 + Math.random() * 2 + "s";
+    c.style.animationDelay = Math.random() * .6 + "s";
+    document.body.appendChild(c);
+  }
 }
 
 async function resultado(e) {
-  const p = await (await fetch(url("pontos/" + id))).json();
-  const acertou = respondida === e.n && minhaAlt === e.correta;
-  
-  // Muda o fundo da tela inteiro para Verde (acerto) ou Vermelho (erro)
-  document.body.style.background = acertou ? "#10b981" : "#ef4444";
-  
-  T.innerHTML = `
-    <h1 style="font-size: 34px; margin-bottom: 8px;">${acertou ? "🎉 Acertou!" : "❌ Errou!"}</h1>
-    <p style="font-size: 20px; font-weight: 600;">Seus pontos: ${p || 0}</p>
-  `;
+  let p = 0;
+  try { p = await (await fetch(url("pontos/" + id))).json(); } catch (x) {}
+  const respondeu = respondida === e.n;
+  const acertou = respondeu && minhaAlt === e.correta;
+
+  resetBg();
+  document.body.className = acertou ? "ok" : "err";
+
+  const titulo = acertou ? "Você acertou!" : "Você perdeu!";
+  const sub = acertou ? "Mandou bem, continue assim!" :
+              respondeu ? "Resposta errada. Na próxima você acerta!" : "Você não respondeu a tempo.";
+
+  T.innerHTML = '<div class="res ' + (acertou ? "ok" : "err") + '">' +
+    '<div class="icone">' + (acertou ? "✓" : "✕") + '</div>' +
+    '<h1>' + titulo + '</h1>' +
+    '<p class="sub">' + sub + '</p>' +
+    '<div class="pts">' + (p || 0) + ' pontos</div></div>';
+
+  if (acertou) confete();
 }
 
 async function fim() {
-  resetBg();
-  const p = await (await fetch(url("pontos/"+id))).json();
-  msg("Fim de jogo! Você fez " + (p || 0) + " pontos.");
+  let p = 0;
+  try { p = await (await fetch(url("pontos/" + id))).json(); } catch (x) {}
+  resetBg();
+  T.innerHTML = '<div class="painel"><div class="logo">Fim de jogo!</div>' +
+    '<p class="sub">' + nome + ', você fez</p>' +
+    '<div class="pts">' + (p || 0) + ' pontos</div></div>';
+  confete();
 }
 
 entrada();
 </script>
 </body>
 </html>
-

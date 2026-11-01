@@ -182,7 +182,7 @@ async function atualizar() {
   const chave = e.fase + e.n;
   if (chave === ultimo) return;
   ultimo = chave;
-  if (e.fase === "pergunta") { if (respondida !== e.n) botoes(e.n); }
+  if (e.fase === "pergunta") { if (respondida !== e.n) botoes(e.n, e); }
   else if (e.fase === "resultado") await resultado(e);
   else if (e.fase === "fim") await fim();
   else msg("Aguarde o início.");
@@ -205,12 +205,12 @@ function pegaAlts(q) {
   return [];
 }
 
-async function botoes(n) {
+async function botoes(n, e) {
   resetBg();
   T.innerHTML = "";
 
-  let q = null;
-  try { q = await (await fetch(DB + sala + "/perguntas/" + (n - 1) + ".json")).json(); } catch (err) {}
+  let q = (e && e.pergunta) ? { pergunta: e.pergunta, alternativas: e.alts } : null;
+  if (!q) try { q = await (await fetch(DB + sala + "/perguntas/" + (n - 1) + ".json")).json(); } catch (err) {}
   const qTexto = (q && (q.titulo || q.pergunta || q.texto || q.enunciado)) || ("Questão " + n);
   const textos = pegaAlts(q);
   const temTexto = textos.some(t => t);

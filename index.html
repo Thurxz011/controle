@@ -70,17 +70,26 @@ input:focus { border-color: var(--accent); transform: scale(1.02); }
   border-radius: 20px;
   box-shadow: 0 6px 0 rgba(0,0,0,.25);
 }
-.alts { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.alts { display: grid; grid-template-columns: 1fr; gap: 12px; }
+.alts.sem-texto { grid-template-columns: 1fr 1fr; }
 .alts button {
-  position: relative;
-  height: 120px; border: 0; border-radius: 20px;
-  font: 800 54px 'Baloo 2', sans-serif; color: #fff; cursor: pointer;
-  text-shadow: 0 3px 0 rgba(0,0,0,.25);
-  box-shadow: 0 7px 0 rgba(0,0,0,.3);
+  display: flex; align-items: center; gap: 14px;
+  min-height: 76px; padding: 12px 16px; border: 0; border-radius: 18px;
+  color: #fff; cursor: pointer; text-align: left;
+  font: 700 20px/1.2 'Nunito', sans-serif;
+  text-shadow: 0 2px 0 rgba(0,0,0,.25);
+  box-shadow: 0 6px 0 rgba(0,0,0,.3);
   transition: transform .1s, box-shadow .1s;
 }
-.alts button::after { content: attr(data-s); position: absolute; top: 10px; left: 14px; font-size: 18px; opacity: .85; }
-.alts button:active { transform: translateY(6px); box-shadow: 0 1px 0 rgba(0,0,0,.3); }
+.alts.sem-texto button { height: 110px; justify-content: center; }
+.alts .letra {
+  flex: none; width: 46px; height: 46px; border-radius: 14px;
+  background: rgba(0,0,0,.25);
+  display: flex; align-items: center; justify-content: center;
+  font: 800 28px 'Baloo 2', sans-serif;
+}
+.alts .txt { flex: 1; overflow-wrap: anywhere; }
+.alts button:active { transform: translateY(5px); box-shadow: 0 1px 0 rgba(0,0,0,.3); }
 
 /* Espera */
 .pulse {
@@ -179,16 +188,32 @@ async function atualizar() {
   else msg("Aguarde o início.");
 }
 
+function pegaTexto(x) {
+  if (x && typeof x === "object") return x.texto || x.titulo || x.text || x.alternativa || "";
+  return x == null ? "" : String(x);
+}
+
+function pegaAlts(q) {
+  if (!q) return [];
+  let a = q.alternativas || q.opcoes || q.opções || q.respostas || q.alts || q.options;
+  if (a && !Array.isArray(a)) a = Object.values(a);
+  if (Array.isArray(a)) return a.slice(0, 4).map(pegaTexto);
+  const grupos = [["a","b","c","d"], ["A","B","C","D"], ["alt1","alt2","alt3","alt4"],
+                  ["alternativa1","alternativa2","alternativa3","alternativa4"],
+                  ["opcao1","opcao2","opcao3","opcao4"]];
+  for (const g of grupos) if (g.some(k => q[k] != null)) return g.map(k => pegaTexto(q[k]));
+  return [];
+}
+
 async function botoes(n) {
   resetBg();
   T.innerHTML = "";
 
-  let qTexto = "Questão " + n;
-  try {
-    const qData = await (await fetch(DB + sala + "/perguntas/" + (n - 1) + ".json")).json();
-    if (qData && qData.titulo) qTexto = qData.titulo;
-    else if (qData && qData.pergunta) qTexto = qData.pergunta;
-  } catch (err) {}
+  let q = null;
+  try { q = await (await fetch(DB + sala + "/perguntas/" + (n - 1) + ".json")).json(); } catch (err) {}
+  const qTexto = (q && (q.titulo || q.pergunta || q.texto || q.enunciado)) || ("Questão " + n);
+  const textos = pegaAlts(q);
+  const temTexto = textos.some(t => t);
 
   const pBox = document.createElement("div");
   pBox.className = "pergunta-box";
@@ -196,12 +221,20 @@ async function botoes(n) {
   T.appendChild(pBox);
 
   const g = document.createElement("div");
-  g.className = "alts";
+  g.className = "alts" + (temTexto ? "" : " sem-texto");
   for (let i = 1; i <= 4; i++) {
     const b = document.createElement("button");
-    b.textContent = letras[i - 1];
-    b.dataset.s = simbolos[i - 1];
     b.style.background = cores[i - 1];
+    const l = document.createElement("span");
+    l.className = "letra";
+    l.textContent = letras[i - 1];
+    b.appendChild(l);
+    if (temTexto) {
+      const t = document.createElement("span");
+      t.className = "txt";
+      t.textContent = textos[i - 1] || "";
+      b.appendChild(t);
+    }
     b.onclick = () => responder(n, i);
     g.appendChild(b);
   }
